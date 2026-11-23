@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Privacy lock: this page cannot send data anywhere. connect-src 'none' blocks fetch/XHR/websockets/beacons. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>BackpayRx — Find your missing Medicare negotiated-price refunds</title>
+<meta name="description" content="Free check for independent pharmacies: see which MFP refunds on Eliquis, Jardiance, Xarelto and other negotiated drugs are late, short, or missing. Your files never leave your computer.">
+<style>
+:root{--ink:#0f1f33;--ink2:#41526a;--muted:#6b7a90;--line:#e3e8ef;--bg:#f7f9fc;--card:#fff;--brand:#0b6e63;--brand2:#0a5a51;--brandsoft:#e6f4f1;--warn:#b45309;--warnsoft:#fff4e5;--bad:#b42318;--badsoft:#fdecea;--ok:#067647;--oksoft:#e7f6ee;--r:14px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;font-size:16px}
+a{color:var(--brand)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+.logo{font-weight:800;font-size:20px;letter-spacing:-.02em;color:var(--ink);text-decoration:none}
+.logo span{color:var(--brand)}
+nav .links a{margin-left:22px;color:var(--ink2);text-decoration:none;font-size:15px}
+nav .links a.btn{color:#fff}
+.btn{display:inline-block;background:var(--brand);color:#fff;border:0;border-radius:10px;padding:12px 20px;font-weight:650;font-size:16px;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--brand2)}
+.btn.ghost{background:#fff;color:var(--brand);border:1.5px solid var(--brand)}
+.btn.small{padding:8px 14px;font-size:14px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+header.hero{background:linear-gradient(180deg,#fff 0%,var(--bg) 100%);padding:70px 0 50px}
+.hero h1{font-size:44px;line-height:1.12;letter-spacing:-.03em;margin:0 0 16px;max-width:760px}
+.hero p.sub{font-size:20px;color:var(--ink2);max-width:680px;margin:0 0 28px}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
+.trustline{margin-top:22px;color:var(--muted);font-size:14px;display:flex;gap:18px;flex-wrap:wrap}
+.trustline b{color:var(--ink)}
+section{padding:56px 0}
+section h2{font-size:30px;letter-spacing:-.02em;margin:0 0 10px}
+section p.lead{color:var(--ink2);font-size:18px;margin:0 0 28px;max-width:720px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:820px){.grid3,.grid4{grid-template-columns:1fr}.hero h1{font-size:32px}nav .links a:not(.btn){display:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.stat b{display:block;font-size:34px;letter-spacing:-.02em;color:var(--brand)}
+.stat span{color:var(--ink2);font-size:15px}
+.src{font-size:13px;color:var(--muted);margin-top:12px}
+.step .n{width:34px;height:34px;border-radius:50%;background:var(--brandsoft);color:var(--brand);font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.step h3{margin:0 0 6px;font-size:18px}
+.step p{margin:0;color:var(--ink2);font-size:15px}
+#check{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.drops{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+@media(max-width:820px){.drops{grid-template-columns:1fr}}
+.drop{border:2px dashed #c9d3e0;border-radius:var(--r);padding:18px;background:var(--bg);cursor:pointer;transition:.15s;position:relative}
+.drop:hover,.drop.over{border-color:var(--brand);background:var(--brandsoft)}
+.drop h4{margin:0 0 4px;font-size:16px}
+.drop p{margin:0;font-size:14px;color:var(--ink2)}
+.drop .tag{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:20px;background:#eef2f7;color:var(--ink2)}
+.drop .tag.req{background:var(--warnsoft);color:var(--warn)}
+.drop .files{margin-top:10px;font-size:13px;color:var(--ok);font-weight:600;word-break:break-all}
+.drop input{display:none}
+.lockbar{display:flex;gap:10px;align-items:flex-start;background:var(--oksoft);color:#054f31;border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:18px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.err{background:var(--badsoft);color:var(--bad);border-radius:10px;padding:12px 14px;margin-top:14px;font-size:14px;display:none}
+details.map{margin-top:16px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--bg)}
+details.map summary{cursor:pointer;font-weight:600;font-size:14px}
+.mapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:12px}
+.mapgrid label{font-size:13px;color:var(--ink2);display:block}
+.mapgrid select{width:100%;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+.mapgrid .missing select{border-color:var(--bad)}
+#results{display:none;margin-top:30px}
+.big{background:linear-gradient(135deg,var(--brand) 0%,#0d8577 100%);color:#fff;border-radius:18px;padding:28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.big .amt{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.big .lbl{opacity:.9;font-size:16px;margin-top:6px}
+.big .btn{background:#fff;color:var(--brand)}
+.kpis{margin-top:16px}
+.kpi{padding:16px}
+.kpi b{display:block;font-size:22px}
+.kpi span{font-size:13px;color:var(--ink2)}
+.kpi.owed{border-color:#f5c2bd;background:var(--badsoft)}
+.kpi.owed b{color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:14px;background:#fff}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--bg);font-weight:650;color:var(--ink2);font-size:13px;position:sticky;top:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tablewrap{border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:520px;margin-top:12px}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:650;white-space:nowrap}
+.pill.owed{background:var(--badsoft);color:var(--bad)}.pill.ok{background:var(--oksoft);color:var(--ok)}.pill.rev{background:var(--warnsoft);color:var(--warn)}.pill.neu{background:#eef2f7;color:var(--ink2)}
+.blurwrap{position:relative}
+.blurwrap .blur{filter:blur(5px);user-select:none;pointer-events:none}
+.blurwrap .over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.55)}
+.blurwrap .over .card{max-width:460px;text-align:center;box-shadow:0 10px 30px rgba(15,31,51,.12)}
+h3.sec{margin:28px 0 4px;font-size:20px}
+.muted{color:var(--muted);font-size:14px}
+.price{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.price{grid-template-columns:1fr}}
+.price .card h3{margin:0 0 4px}
+.price .card .p{font-size:34px;font-weight:800;color:var(--brand);margin:6px 0}
+.price ul{padding-left:18px;margin:10px 0 0;color:var(--ink2)}
+.price li{margin:4px 0}
+ol.steps{padding-left:20px;color:var(--ink2)}ol.steps li{margin:8px 0}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2f7;padding:2px 6px;border-radius:6px;font-size:14px;color:var(--ink)}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.faq summary{font-weight:650;cursor:pointer}
+.faq p{color:var(--ink2);margin:10px 0 0}
+footer{padding:36px 0;color:var(--muted);font-size:13px;border-top:1px solid var(--line);background:#fff}
+#operator{display:none;margin-top:36px;border:2px solid #1f2a44;border-radius:18px;padding:22px;background:#fbfcff}
+#operator h2{font-size:22px;margin:0 0 4px}
+.opbadge{display:inline-block;background:#1f2a44;color:#fff;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-bottom:8px}
+.field{display:flex;flex-direction:column;font-size:13px;color:var(--ink2);gap:4px}
+.field input,.field select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;min-width:200px}
+textarea.letter{width:100%;min-height:220px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;border:1px solid var(--line);border-radius:10px;padding:12px}
+.hidden{display:none!important}
+@media print{nav,header.hero,section:not(#check),#check .drops,#check .lockbar,#check .row.controls,details.map,.big .btn,.no-print,footer,#operator{display:none!important}#results{display:block!important}body{background:#fff}.tablewrap{max-height:none;overflow:visible}.blurwrap .over{display:none}.blurwrap .blur{filter:none}}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <a class="logo" href="#"><span>Backpay</span>Rx</a>
+  <div class="links"><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#recover">Recovery</a><a href="#faq">FAQ</a><a class="btn small" href="#check">Run free check</a></div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <h1>Is your pharmacy missing Medicare refunds? Get your back pay.</h1>
+  <p class="sub">Independent pharmacies are losing negotiated‑price (MFP) refunds. Run a free 5‑minute check on Eliquis, Jardiance, Xarelto, Januvia, Farxiga, Entresto and the rest to see exactly which refunds are late, short, or missing. If you want, we chase them for you, and you pay only if we recover money.</p>
+  <div class="ctas"><a class="btn" href="#check">Run my free check</a><button class="btn ghost" id="heroSample" type="button">See a sample report</button></div>
+  <div class="trustline"><span>🔒 <b>Your files never leave your computer</b></span><span>💊 Built by a PharmD</span><span>💵 No upfront cost, ever</span></div>
+</div></header>
+
+<section><div class="wrap">
+  <h2>This is happening at pharmacies like yours</h2>
+  <p class="lead">From NCPA's February 2026 survey of independent pharmacy owners on the Medicare Drug Price Negotiation Program:</p>
+  <div class="grid3">
+    <div class="card stat"><b>60%</b><span>dipped into pharmacy savings to keep operating while waiting on refunds</span></div>
+    <div class="card stat"><b>78%</b><span>reported problems reconciling MFP claims</span></div>
+    <div class="card stat"><b>22%</b><span>waited more than 28 days for refunds</span></div>
+  </div>
+  <p class="src">Source: <a href="https://ncpa.org/newsroom/news-releases/2026/02/27/ncpa-asks-cms-expedited-payments-and-other-corrections-mdpnp" rel="noopener noreferrer" target="_blank">NCPA, Feb. 27, 2026</a>. More negotiated drugs are added January 1, 2027.</p>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <h2>How it works</h2>
+  <p class="lead">Three steps. No software to install, no account, no sales call.</p>
+  <div class="grid3">
+    <div class="card step"><div class="n">1</div><h3>Download your MTF files</h3><p>Log in to the Medicare Transaction Facilitator Data Module and download your Claims Tracking Report and your 835 remittance files. Takes about 2 minutes.</p></div>
+    <div class="card step"><div class="n">2</div><h3>Drop them below</h3><p>The check runs inside your web browser. Nothing is uploaded to us or anyone else. The page is technically blocked from sending data anywhere.</p></div>
+    <div class="card step"><div class="n">3</div><h3>See what you're owed</h3><p>Every claim gets sorted into paid, late, short, or never reached MTF, along with the dollar amount you're likely owed.</p></div>
+  </div>
+</div></section>
+
+<section id="check"><div class="wrap">
+  <h2>Your free refund check</h2>
+  <p class="lead">Add your files, then press <b>Run my check</b>. Only the Claims Tracking Report is required, and adding your 835s and dispensing report makes the check more complete.</p>
+  <div class="lockbar">🔒 <div><b>Private by design.</b> Files are read by your own browser and never transmitted. This page's security policy blocks all network requests, which you or your IT person can verify in the page source (<span class="code">connect-src 'none'</span>).</div></div>
+  <div class="drops">
+    <label class="drop" id="dropTracking"><span class="tag req">Required</span><h4>1. MTF Claims Tracking Report</h4><p>CSV or Excel export saved as CSV, from the MTF Data Module.</p><input type="file" accept=".csv,.txt,.tsv" id="fileTracking"><div class="files" id="namesTracking"></div></label>
+    <label class="drop" id="dropRemit"><span class="tag">Recommended</span><h4>2. 835 remittance files</h4><p>The MTF payment files (ERA/835). Select as many as you have.</p><input type="file" multiple accept=".835,.txt,.edi,.x12,.dat,*" id="fileRemit"><div class="files" id="namesRemit"></div></label>
+    <label class="drop" id="dropDisp"><span class="tag">Optional</span><h4>3. Dispensing report</h4><p>From your pharmacy software: fills of the negotiated drugs (Rx #, fill date, NDC). It finds claims that never reached MTF.</p><input type="file" accept=".csv,.txt,.tsv" id="fileDisp"><div class="files" id="namesDisp"></div></label>
+  </div>
+  <div class="row controls"><button class="btn" id="runBtn" type="button">Run my check</button><button class="btn ghost" id="sampleBtn" type="button">Use sample data</button><span class="muted" id="runNote"></span></div>
+  <div class="err" id="err"></div>
+  <details class="map" id="mapBox"><summary>Check column matching (only needed if something looks wrong)</summary><div id="mapUI"></div></details>
+
+  <div id="results">
+    <div class="big">
+      <div><div class="amt" id="owedAmt">$0</div><div class="lbl" id="owedLbl">likely owed to you</div></div>
+      <a class="btn" href="#recover" id="recoverCta">Recover it for me →</a>
+    </div>
+    <div class="grid4 kpis" id="kpis"></div>
+    <h3 class="sec">By manufacturer</h3>
+    <p class="muted">Claims likely owed, grouped by the drug company responsible for the refund.</p>
+    <div class="tablewrap" style="max-height:none"><table id="mfrTable"></table></div>
+    <h3 class="sec">Claims likely owed</h3>
+    <p class="muted">"Likely owed" covers refunds that are late, paid short with no reason given, or filled but never sent through MTF. Short payments explained by 340B or contract pricing are not counted. All amounts are estimates based on your files.</p>
+    <div class="blurwrap" id="claimsWrap"><div class="tablewrap"><table id="claimsTable"></table></div></div>
+    <div class="row no-print" style="margin-top:16px"><button class="btn ghost small" id="printBtn" type="button">Print / save report as PDF</button><a class="btn small" href="#recover">Have BackpayRx recover it</a></div>
+  </div>
+
+  <div id="operator">
+    <div class="opbadge">Operator mode</div>
+    <h2>Dispute prep &amp; recovery tracking</h2>
+    <p class="muted">For BackpayRx staff working a client's files under a signed BAA. Everything still runs locally on this computer.</p>
+    <div class="row" style="margin:14px 0">
+      <label class="field">Pharmacy name<input id="opName" placeholder="Sunshine Pharmacy"></label>
+      <label class="field">Pharmacy NPI<input id="opNpi" placeholder="1234567890"></label>
+      <label class="field">Contact for disputes<input id="opContact" placeholder="Marcus Bright, disputes@backpayrx.com"></label>
+    </div>
+    <div class="row">
+      <label class="field">Show bucket<select id="opFilter"><option value="owed">Likely owed only</option><option value="all">All claims</option></select></label>
+      <button class="btn small" id="opExportAll" type="button">Download full audit CSV</button>
+      <button class="btn small" id="opExportDispute" type="button">Download dispute claims CSV</button>
+      <button class="btn small ghost" id="opExportUpstream" type="button">Download "never reached MTF" CSV</button>
+    </div>
+    <div class="tablewrap"><table id="opTable"></table></div>
+    <h3 class="sec">Dispute letters (one per manufacturer)</h3>
+    <p class="muted">Paste into the MTF DM complaint/dispute form and attach that manufacturer's claim CSV.</p>
+    <div class="row" style="margin:10px 0"><label class="field">Manufacturer<select id="opLetterSel"></select></label><button class="btn small" id="opLetterCsv" type="button">Download this manufacturer's CSV</button><button class="btn small ghost" id="opCopy" type="button">Copy letter</button></div>
+    <textarea class="letter" id="opLetter" readonly></textarea>
+    <h3 class="sec">Recovery tracker &amp; invoice</h3>
+    <p class="muted">Load a dispute claims CSV you filed earlier, plus the newer 835 files, to see what came back and what to invoice.</p>
+    <div class="row" style="margin:10px 0">
+      <label class="field">Earlier dispute CSV<input type="file" id="recDispute" accept=".csv"></label>
+      <label class="field">Newer 835 files<input type="file" id="recRemit" multiple></label>
+      <label class="field">Fee rate<input id="recRate" value="20" style="min-width:80px" inputmode="decimal"></label>
+      <button class="btn small" id="recRun" type="button">Check recoveries</button>
+    </div>
+    <div id="recOut"></div>
+  </div>
+</div></section>
+
+<section id="pricing"><div class="wrap">
+  <h2>Simple pricing</h2>
+  <p class="lead">You never pay to find out. You pay only when we actually get money back to you.</p>
+  <div class="price">
+    <div class="card"><h3>Free check</h3><div class="p">$0</div><ul><li>Runs in your browser, so files stay private</li><li>See every late, short, and missing refund</li><li>Totals by manufacturer</li><li>Print or save as PDF</li></ul></div>
+    <div class="card" style="border:2px solid var(--brand)"><h3>Done-for-you recovery</h3><div class="p">20% <span style="font-size:16px;color:var(--ink2);font-weight:600">of what we recover</span></div><ul><li>We file and follow up on every dispute through MTF</li><li>Refunds keep going straight to your bank, and we never touch your money</li><li>Monthly monitoring so nothing slips again</li><li>Nothing recovered means you owe nothing. Cancel anytime.</li></ul></div>
+  </div>
+</div></section>
+
+<section id="recover"><div class="wrap">
+  <h2>Have us recover it</h2>
+  <p class="lead">It takes about 10 minutes to set up, and from then on we do the chasing.</p>
+  <div class="grid3">
+    <div class="card step"><div class="n">1</div><h3>Sign up</h3><p>Email us your pharmacy name, NPI, and contact info. You'll e‑sign our Business Associate Agreement (HIPAA) and a one‑page recovery agreement.</p><p style="margin-top:12px"><a class="btn small" id="signupLink" href="#" >Email us to start recovery</a></p></div>
+    <div class="card step"><div class="n">2</div><h3>Link us in MTF</h3><p>In your MTF Data Module enrollment, add us as your Third‑Party Support Entity for <b>remittance support only</b>. See the steps below.</p></div>
+    <div class="card step"><div class="n">3</div><h3>We go to work</h3><p>We review every refund, file disputes with each manufacturer through MTF, and follow up. You get a monthly summary of what came back.</p></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <h3 style="margin-top:0">How to add us as your Third‑Party Support Entity</h3>
+    <ol class="steps">
+      <li>Log in to the <b>MTF Data Module</b> with your pharmacy's account.</li>
+      <li>Open your <b>Dispensing Entity Enrollment Questionnaire</b> and go to the <b>Third‑Party Support Entity</b> section.</li>
+      <li>Select or enter our TPSE name <b>exactly</b> as: <span class="code" id="tpseName">Simple Thread LLC</span> (BackpayRx is our brand name). It must match exactly for MTF to link us.</li>
+      <li>For the function, choose <b>Remittance support only</b>. Do <b>not</b> choose payment support: your refunds should keep going straight to your own bank account.</li>
+      <li>Save and submit. MTF emails you a confirmation, and once we see the link we'll email you to confirm.</li>
+    </ol>
+    <p class="muted">Menu names in the MTF Data Module may differ slightly. If you get stuck, email <a id="helpEmail" href="#">hello@backpayrx.com</a> and we'll walk you through it.</p>
+  </div>
+</div></section>
+
+<section id="faq" class="faq"><div class="wrap">
+  <h2>Questions</h2>
+  <details><summary>Where do I find these files?</summary><p>Log in to the Medicare Transaction Facilitator Data Module, the same account you enrolled in for the negotiated‑price program. Download the Claims Tracking Report as a CSV and the 835 remittance files for the months you want checked. For the optional dispensing report, run a report in your pharmacy software for fills of the negotiated drugs with the Rx number, fill date and NDC.</p></details>
+  <details><summary>Is my patient data safe?</summary><p>For the free check, your files never leave your computer. The page reads them in your browser, and its security policy blocks it from sending anything over the internet. If you sign up for done‑for‑you recovery, we work under a signed HIPAA Business Associate Agreement, access your remittance data through MTF only, and keep it off email and cloud storage.</p></details>
+  <details><summary>Are you part of Medicare or CMS?</summary><p>No. BackpayRx is a private company and is not affiliated with, endorsed by, or acting for CMS, Medicare, or any drug manufacturer.</p></details>
+  <details><summary>How accurate is "likely owed"?</summary><p>It's an estimate from your own files. We compare each claim's expected refund (the Standard Default Refund Amount from MTF data) with what was actually paid. Some short payments are legitimate, for example when a manufacturer uses your contract price or a 340B adjustment applies, and we list those separately and don't count them as owed.</p></details>
+  <details><summary>What does recovery cost?</summary><p>20% of the refund money we actually recover, invoiced after it lands in your account. If we recover nothing, you pay nothing. There are no setup fees or contracts, and you can cancel anytime with 30 days' notice.</p></details>
+  <details><summary>Do you ever hold my money?</summary><p>No. You link us for remittance support only, so refunds keep going directly to your bank. We invoice our fee separately.</p></details>
+</div></section>
+
+<footer><div class="wrap">
+  <div><b id="footBrand">BackpayRx</b> is a brand of Simple Thread LLC<span id="footAddr"></span><a id="footEmail" href="#">hello@backpayrx.com</a></div>
+  <p>BackpayRx is a private company and is not affiliated with or endorsed by the Centers for Medicare &amp; Medicaid Services (CMS), Medicare, the Medicare Transaction Facilitator, or any drug manufacturer. Report results are estimates based on files you provide and are not legal, tax, or financial advice. Drug names are trademarks of their respective owners.</p>
+</div></footer>
+
+<script>
+/* ======= EDIT YOUR BUSINESS DETAILS HERE ======= */
+window.BACKPAY_CONFIG = {
+  brand: 'BackpayRx',
+  tpseName: 'Simple Thread LLC',          // must EXACTLY match the legal name you enroll with as a TPSE in MTF
+  contactEmail: 'hello@backpayrx.com',
+  signupUrl: 'mailto:hello@backpayrx.com?subject=Start%20BackpayRx%20recovery&body=Pharmacy%20name%3A%0ANPI%3A%0AOwner%20name%3A%0APhone%3A', // business info only, NO patient data
+  mailingAddress: '',   // add your business mailing address here
+  feeRate: 0.20,
+  lateDays: 21
+};
+</script>
+<script>
+/* BackpayRx audit engine — runs 100% in the browser (or Node for tests).
+ * No network calls. Parses MTF claim-tracking CSVs + X12 835 remittance files,
+ * matches them, and sorts every claim into a bucket.
+ *
+ * IMPORTANT: The exact column names in the MTF Claims Tracking Report and the
+ * exact use of 835 fields in the MTF 835 Companion Guide must be confirmed
+ * against real files. Column detection here is heuristic and every field can
+ * be re-mapped by hand in the UI.
+ */
+(function (root) {
+  'use strict';
+  var DAY = 86400000;
+
+  // ---------- small utils ----------
+  function norm(h) { return String(h || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  function money(v) {
+    if (v === null || v === undefined) return null;
+    var s = String(v).replace(/[$,\s]/g, '');
+    if (s === '') return null;
+    if (/^\(.*\)$/.test(s)) s = '-' + s.slice(1, -1);
+    var n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
+  function round2(n) { return Math.round((n || 0) * 100) / 100; }
+  function parseDate(v) {
+    if (!v) return null;
+    var s = String(v).trim();
+    var m;
+    if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+    if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/))) {
+      var y = +m[3]; if (y < 100) y += 2000;
+      return Date.UTC(y, +m[1] - 1, +m[2]);
+    }
+    if ((m = s.match(/^(\d{4})(\d{2})(\d{2})$/))) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+    var t = Date.parse(s);
+    return isNaN(t) ? null : t;
+  }
+  function fmtDate(t) {
+    if (t === null || t === undefined) return '';
+    var d = new Date(t);
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+  }
+  function digits(s) { return String(s || '').replace(/\D/g, ''); }
+
+  // ---------- CSV ----------
+  function parseCSV(text) {
+    text = String(text || '').replace(/^﻿/, '');
+    var firstLine = text.split(/\r?\n/)[0] || '';
+    var delim = (firstLine.split('\t').length > firstLine.split(',').length) ? '\t'
+      : (firstLine.split('|').length > firstLine.split(',').length ? '|' : ',');
+    var rows = [], row = [], field = '', q = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+        else field += c;
+      } else if (c === '"') q = true;
+      else if (c === delim) { row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(field); field = '';
+        if (row.length > 1 || row[0] !== '') rows.push(row);
+        row = [];
+      } else field += c;
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    if (!rows.length) return { headers: [], records: [] };
+    var headers = rows[0].map(function (h) { return h.trim(); });
+    var records = rows.slice(1).map(function (r) {
+      var o = {}; headers.forEach(function (h, j) { o[h] = (r[j] || '').trim(); }); return o;
+    });
+    return { headers: headers, records: records };
+  }
+  function toCSV(rows, cols) {
+    function esc(v) {
+      v = (v === null || v === undefined) ? '' : String(v);
+      return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    }
+    var out = [cols.map(function (c) { return esc(c.label); }).join(',')];
+    rows.forEach(function (r) { out.push(cols.map(function (c) { return esc(typeof c.get === 'function' ? c.get(r) : r[c.key]); }).join(',')); });
+    return out.join('\r\n');
+  }
+
+  // ---------- column auto-mapping ----------
+  var HINTS = {
+    tracking: {
+      claimId: ['icn', 'mtficn', 'internalcontrolnumber', 'claimcontrolnumber', 'mtfclaimid', 'claimid', 'claimnumber'],
+      rxNumber: ['rxnumber', 'prescriptionnumber', 'rxno', 'prescriptionservicereferencenumber', 'rxnum'],
+      fillDate: ['dateofservice', 'dos', 'filldate', 'servicedate', 'datefilled', 'dispensedate'],
+      ndc: ['ndc11', 'ndc', 'productserviceid', 'productid'],
+      drug: ['drugname', 'selecteddrug', 'productname', 'drug', 'brandname'],
+      manufacturer: ['primarymanufacturer', 'manufacturername', 'manufacturer', 'labeler'],
+      expected: ['sdra', 'sdraamount', 'standarddefaultrefundamount', 'estimatedsdra', 'estimatedrefund', 'expectedrefund', 'estimatedmfprefund', 'mfprefundestimate'],
+      status: ['refundstatus', 'claimstatus', 'mfpstatus', 'status', 'disposition'],
+      statusDate: ['statusdate', 'datesenttomanufacturer', 'transmitdate', 'pdeacceptancedate', 'manufacturerreceiptdate', 'lastupdated', 'processeddate']
+    },
+    dispensing: {
+      rxNumber: ['rxnumber', 'prescriptionnumber', 'rxno', 'rxnum', 'rx'],
+      fillDate: ['filldate', 'datefilled', 'dateofservice', 'dos', 'dispensedate', 'servicedate'],
+      ndc: ['ndc11', 'ndc', 'productid'],
+      drug: ['drugname', 'drug', 'productname', 'description'],
+      payer: ['planname', 'payer', 'thirdparty', 'insurance', 'bin'],
+      paidByPlan: ['planpaid', 'paidamount', 'thirdpartypaid', 'reimbursement', 'amountpaid']
+    }
+  };
+  function autoMap(headers, kind) {
+    var hints = HINTS[kind], map = {}, used = {};
+    var nh = headers.map(norm);
+    Object.keys(hints).forEach(function (field) {
+      var list = hints[field], found = null;
+      for (var a = 0; a < list.length && found === null; a++) {           // exact first
+        for (var i = 0; i < nh.length; i++) if (!used[i] && nh[i] === list[a]) { found = i; break; }
+      }
+      for (var b = 0; b < list.length && found === null; b++) {           // then contains
+        for (var k = 0; k < nh.length; k++) if (!used[k] && nh[k].indexOf(list[b]) !== -1) { found = k; break; }
+      }
+      if (found !== null) { map[field] = headers[found]; used[found] = true; }
+    });
+    return map;
+  }
+  var REQUIRED = { tracking: ['claimId', 'expected'], dispensing: ['fillDate', 'ndc'] };
+  function missingFields(map, kind) { return REQUIRED[kind].filter(function (f) { return !map[f]; }); }
+
+  // ---------- X12 835 ----------
+  function parse835(text) {
+    text = String(text || '').replace(/^﻿/, '');
+    var start = text.indexOf('ISA');
+    if (start === -1) throw new Error('Not an 835 file (no ISA segment found).');
+    text = text.slice(start);
+    var elSep = text.charAt(3);
+    var segTerm = text.length > 105 ? text.charAt(105) : '~';
+    var subSep = text.length > 104 ? text.charAt(104) : ':';
+    if (/[A-Za-z0-9]/.test(segTerm) || segTerm === elSep) segTerm = '~';
+    var segs = text.split(segTerm).map(function (s) { return s.replace(/^[\r\n]+|[\r\n]+$/g, ''); }).filter(Boolean);
+    var claims = [], payment = { amount: null, date: null, trace: '', payer: '', payee: '' };
+    var cur = null, inPayerLoop = false;
+    function close() { if (cur) { claims.push(cur); cur = null; } }
+    segs.forEach(function (seg) {
+      var e = seg.split(elSep), id = e[0].trim();
+      switch (id) {
+        case 'ST': close(); payment = { amount: null, date: null, trace: '', payer: '', payee: '' }; break;
+        case 'BPR': payment.amount = money(e[2]); payment.date = parseDate(e[16]); break;
+        case 'TRN': payment.trace = e[2] || ''; break;
+        case 'N1':
+          if (e[1] === 'PR') { payment.payer = e[2] || ''; inPayerLoop = true; }
+          else if (e[1] === 'PE') { payment.payee = e[2] || ''; inPayerLoop = false; }
+          break;
+        case 'CLP':
+          close();
+          cur = {
+            claimId: (e[1] || '').trim(), statusCode: e[2] || '', charge: money(e[3]), paid: money(e[4]) || 0,
+            payerControl: (e[7] || '').trim(), cas: [], ndc: '', serviceDate: null,
+            payer: payment.payer, trace: payment.trace, paymentDate: payment.date, refs: {}
+          };
+          break;
+        case 'CAS':
+          if (cur) {
+            for (var j = 2; j + 1 < e.length; j += 3) {
+              if (e[j]) cur.cas.push({ group: e[1], reason: e[j], amount: money(e[j + 1]) || 0 });
+            }
+          }
+          break;
+        case 'SVC':
+          if (cur) {
+            var comp = (e[1] || '').split(subSep);
+            if (comp.length > 1 && /^N4$/i.test(comp[0])) cur.ndc = digits(comp[1]);
+          }
+          break;
+        case 'DTM':
+          if (cur && (e[1] === '232' || e[1] === '472' || e[1] === '233')) {
+            if (!cur.serviceDate) cur.serviceDate = parseDate(e[2]);
+          }
+          break;
+        case 'REF':
+          if (cur) cur.refs[e[1]] = e[2];
+          break;
+        case 'SE': close(); break;
+      }
+    });
+    close();
+    return claims;
+  }
+
+  // ---------- normalization ----------
+  function normTracking(records, map) {
+    return records.map(function (r, i) {
+      return {
+        row: i + 2,
+        claimId: (r[map.claimId] || '').trim(),
+        rxNumber: map.rxNumber ? (r[map.rxNumber] || '').trim() : '',
+        fillDate: map.fillDate ? parseDate(r[map.fillDate]) : null,
+        ndc: map.ndc ? digits(r[map.ndc]) : '',
+        drug: map.drug ? r[map.drug] : '',
+        manufacturer: map.manufacturer ? r[map.manufacturer] : '',
+        expected: money(r[map.expected]),
+        status: map.status ? (r[map.status] || '') : '',
+        statusDate: map.statusDate ? parseDate(r[map.statusDate]) : null
+      };
+    }).filter(function (t) { return t.claimId; });
+  }
+  function normDispensing(records, map) {
+    return records.map(function (r) {
+      return {
+        rxNumber: map.rxNumber ? (r[map.rxNumber] || '').trim() : '',
+        fillDate: parseDate(r[map.fillDate]),
+        ndc: digits(r[map.ndc]),
+        drug: map.drug ? r[map.drug] : ''
+      };
+    }).filter(function (d) { return d.fillDate && d.ndc; });
+  }
+
+  // ---------- audit ----------
+  var DEFAULTS = {
+    lateDays: 21,
+    tolerance: 0.50,
+    explainedPattern: /340b|contract|prospective|not required|no refund required|purchased at mfp|wac adjust/i,
+    deniedPattern: /deni|reject|not eligible|ineligible|refund not owed|no refund due/i,
+    reviewReasonCodes: ['307']     // CARC 307 = refund adjusted vs SDRA (per vendor docs). Needs human review.
+  };
+  var BUCKETS = {
+    paid: { label: 'Paid correctly', owed: false },
+    overpaid: { label: 'Paid (above estimate)', owed: false },
+    pending: { label: 'Not due yet', owed: false },
+    late: { label: 'Late — no payment yet', owed: true },
+    short_unexplained: { label: 'Paid short — no reason given', owed: true },
+    short_review: { label: 'Paid short — manufacturer used different method (review)', owed: false },
+    short_explained: { label: 'Paid short — explained (340B / contract)', owed: false },
+    denied: { label: 'Denied by manufacturer', owed: false },
+    missing_upstream: { label: 'Filled but never reached MTF', owed: true },
+    no_expected: { label: 'No expected amount listed', owed: false }
+  };
+
+  function indexPayments(payClaims) {
+    var idx = {};
+    payClaims.forEach(function (p) {
+      [p.claimId, p.payerControl].forEach(function (k) {
+        if (!k) return;
+        var it = idx[k] || (idx[k] = { paid: 0, cas: [], payments: [], lastDate: null, ndc: '', payer: '' });
+        if (it.payments.indexOf(p) === -1) {
+          it.payments.push(p); it.paid += p.paid || 0; it.cas = it.cas.concat(p.cas);
+          if (p.paymentDate && (!it.lastDate || p.paymentDate > it.lastDate)) it.lastDate = p.paymentDate;
+          if (p.ndc) it.ndc = p.ndc; if (p.payer) it.payer = p.payer;
+        }
+      });
+    });
+    return idx;
+  }
+
+  function audit(opts) {
+    var o = {}; Object.keys(DEFAULTS).forEach(function (k) { o[k] = (opts && opts[k] !== undefined) ? opts[k] : DEFAULTS[k]; });
+    var asOf = (opts && opts.asOf) || Date.now();
+    var tracking = opts.tracking || [], payIdx = indexPayments(opts.payments || []), disp = opts.dispensing || [];
+    var rows = [];
+    // average expected per NDC, used to estimate claims that never reached MTF
+    var ndcAvg = {}, ndcCnt = {}, ndcMfr = {}, ndcDrug = {};
+    tracking.forEach(function (t) { if (t.ndc && t.manufacturer) ndcMfr[t.ndc] = t.manufacturer; if (t.ndc && t.drug) ndcDrug[t.ndc] = t.drug; });
+    tracking.forEach(function (t) { if (t.ndc && t.expected) { ndcAvg[t.ndc] = (ndcAvg[t.ndc] || 0) + t.expected; ndcCnt[t.ndc] = (ndcCnt[t.ndc] || 0) + 1; } });
+    Object.keys(ndcAvg).forEach(function (k) { ndcAvg[k] = ndcAvg[k] / ndcCnt[k]; });
+
+    tracking.forEach(function (t) {
+      var p = payIdx[t.claimId];
+      var paid = p ? round2(p.paid) : 0;
+      var exp = t.expected;
+      var ageFrom = t.statusDate || t.fillDate;
+      var age = ageFrom ? Math.floor((asOf - ageFrom) / DAY) : null;
+      var codes = p ? p.cas.map(function (c) { return c.reason; }) : [];
+      var bucket, note = '';
+      if (o.deniedPattern.test(t.status) && paid <= 0) { bucket = 'denied'; note = t.status; }
+      else if (exp === null || exp === undefined) { bucket = 'no_expected'; }
+      else if (paid >= exp - o.tolerance) { bucket = paid > exp + o.tolerance ? 'overpaid' : 'paid'; }
+      else if (paid <= 0) {
+        if (o.explainedPattern.test(t.status)) { bucket = 'short_explained'; note = t.status; }
+        else if (age !== null && age > o.lateDays) { bucket = 'late'; note = age + ' days since ' + (t.statusDate ? 'status date' : 'fill'); }
+        else { bucket = 'pending'; note = age === null ? 'no date' : age + ' days'; }
+      } else {
+        if (o.explainedPattern.test(t.status)) { bucket = 'short_explained'; note = t.status; }
+        else if (codes.some(function (c) { return o.reviewReasonCodes.indexOf(c) !== -1; })) { bucket = 'short_review'; note = 'Adjustment code ' + codes.join('/'); }
+        else { bucket = 'short_unexplained'; note = codes.length ? 'Codes ' + codes.join('/') : 'No adjustment reason'; }
+      }
+      var gap = exp !== null && exp !== undefined ? round2(Math.max(0, exp - paid)) : null;
+      rows.push({
+        claimId: t.claimId, rxNumber: t.rxNumber, fillDate: t.fillDate, ndc: t.ndc || (p && p.ndc) || '',
+        drug: t.drug, manufacturer: t.manufacturer || (p && p.payer) || '', expected: exp, paid: paid,
+        gap: gap, bucket: bucket, owed: BUCKETS[bucket].owed, note: note, ageDays: age, status: t.status,
+        lastPaymentDate: p ? p.lastDate : null
+      });
+    });
+
+    // dispensed fills of MFP drugs that never appear in the tracking report
+    if (disp.length) {
+      var trackedNdcs = {};
+      tracking.forEach(function (t) { if (t.ndc) trackedNdcs[t.ndc] = true; });
+      var keyRx = {}, keyNdcDate = {};
+      tracking.forEach(function (t) {
+        if (t.rxNumber && t.fillDate) keyRx[t.rxNumber + '|' + t.fillDate] = true;
+        if (t.ndc && t.fillDate) keyNdcDate[t.ndc + '|' + t.fillDate] = (keyNdcDate[t.ndc + '|' + t.fillDate] || 0) + 1;
+      });
+      var usedNdcDate = {};
+      disp.forEach(function (d) {
+        var mfpDrug = trackedNdcs[d.ndc] || (opts.mfpNdcs && opts.mfpNdcs[d.ndc]);
+        if (!mfpDrug) return;
+        if (d.rxNumber && keyRx[d.rxNumber + '|' + d.fillDate]) return;
+        var k = d.ndc + '|' + d.fillDate;
+        if (!d.rxNumber || !Object.keys(keyRx).length) {
+          usedNdcDate[k] = (usedNdcDate[k] || 0) + 1;
+          if (usedNdcDate[k] <= (keyNdcDate[k] || 0)) return;
+        }
+        var age = Math.floor((asOf - d.fillDate) / DAY);
+        if (age <= 14) return; // give the plan/PDE process time
+        var est = ndcAvg[d.ndc] ? round2(ndcAvg[d.ndc]) : null;
+        rows.push({
+          claimId: '', rxNumber: d.rxNumber, fillDate: d.fillDate, ndc: d.ndc, drug: d.drug || ndcDrug[d.ndc] || '', manufacturer: ndcMfr[d.ndc] || '',
+          expected: est, paid: 0, gap: est, bucket: 'missing_upstream', owed: true,
+          note: 'Estimated from average refund for this NDC; confirm the claim was billed to a Part D plan',
+          ageDays: age, status: '', lastPaymentDate: null
+        });
+      });
+    }
+    return rows;
+  }
+
+  function summarize(rows) {
+    var s = { totalClaims: rows.length, expected: 0, paid: 0, likelyOwed: 0, likelyOwedClaims: 0, byBucket: {}, byManufacturer: {} };
+    Object.keys(BUCKETS).forEach(function (b) { s.byBucket[b] = { label: BUCKETS[b].label, count: 0, gap: 0, owed: BUCKETS[b].owed }; });
+    rows.forEach(function (r) {
+      s.expected += r.expected || 0; s.paid += r.paid || 0;
+      var b = s.byBucket[r.bucket]; b.count++; b.gap += r.gap || 0;
+      if (r.owed) {
+        s.likelyOwed += r.gap || 0; s.likelyOwedClaims++;
+        var m = r.manufacturer || 'Unknown';
+        var bm = s.byManufacturer[m] || (s.byManufacturer[m] = { count: 0, owed: 0 });
+        bm.count++; bm.owed += r.gap || 0;
+      }
+    });
+    s.expected = round2(s.expected); s.paid = round2(s.paid); s.likelyOwed = round2(s.likelyOwed);
+    Object.keys(s.byBucket).forEach(function (k) { s.byBucket[k].gap = round2(s.byBucket[k].gap); });
+    Object.keys(s.byManufacturer).forEach(function (k) { s.byManufacturer[k].owed = round2(s.byManufacturer[k].owed); });
+    return s;
+  }
+
+  // ---------- dispute pack ----------
+  var DISPUTE_COLS = [
+    { label: 'Manufacturer', key: 'manufacturer' }, { label: 'ICN / Claim ID', key: 'claimId' },
+    { label: 'Rx Number', key: 'rxNumber' }, { label: 'Date of Service', get: function (r) { return fmtDate(r.fillDate); } },
+    { label: 'NDC', key: 'ndc' }, { label: 'Drug', key: 'drug' },
+    { label: 'Expected Refund', get: function (r) { return r.expected === null ? '' : r.expected.toFixed(2); } },
+    { label: 'Paid', get: function (r) { return (r.paid || 0).toFixed(2); } },
+    { label: 'Amount Disputed', get: function (r) { return r.gap === null ? '' : r.gap.toFixed(2); } },
+    { label: 'Issue', get: function (r) { return BUCKETS[r.bucket].label; } }, { label: 'Detail', key: 'note' },
+    { label: 'Days Outstanding', key: 'ageDays' },
+    { label: 'Disputed On', get: function (r) { return fmtDate(r.disputedOn || Date.now()); } }
+  ];
+  function disputePack(rows, info) {
+    info = info || {};
+    var owed = rows.filter(function (r) { return r.owed && r.bucket !== 'missing_upstream'; });
+    var upstream = rows.filter(function (r) { return r.bucket === 'missing_upstream'; });
+    var groups = {};
+    owed.forEach(function (r) { var m = r.manufacturer || 'Unknown manufacturer'; (groups[m] = groups[m] || []).push(r); });
+    var letters = Object.keys(groups).map(function (m) {
+      var list = groups[m], total = round2(list.reduce(function (a, r) { return a + (r.gap || 0); }, 0));
+      var late = list.filter(function (r) { return r.bucket === 'late'; }).length;
+      var shortN = list.length - late;
+      var text = [
+        'Subject: MFP refund dispute — ' + (info.pharmacyName || '[Pharmacy name]') + ' (NPI ' + (info.npi || '[NPI]') + ') — ' + m,
+        '',
+        'Dispensing entity: ' + (info.pharmacyName || '[Pharmacy name]') + ', NPI ' + (info.npi || '[NPI]'),
+        'Submitted by: ' + (info.submitter || '[Your company], Third-Party Support Entity on behalf of the dispensing entity'),
+        'Primary manufacturer: ' + m,
+        'Date: ' + fmtDate(info.asOf || Date.now()),
+        '',
+        'Summary: ' + list.length + ' MFP-eligible claims with refunds not received or paid below the expected refund, totaling $' + total.toFixed(2) + '.',
+        '  - ' + late + ' claim(s) with no refund payment received after the prompt payment window.',
+        '  - ' + shortN + ' claim(s) paid below the expected refund with no adjustment reason provided.',
+        '',
+        'The claim-level detail is attached (ICN, date of service, NDC, expected refund, amount paid, amount disputed).',
+        'Expected refund amounts are taken from the MTF claim-level data (Standard Default Refund Amount) unless noted.',
+        'We request payment of the outstanding amounts or a claim-level explanation for each.',
+        '',
+        'Contact: ' + (info.contact || '[name, email]')
+      ].join('\n');
+      return { manufacturer: m, claims: list.length, total: total, text: text, csv: toCSV(list, DISPUTE_COLS) };
+    });
+    return {
+      letters: letters,
+      allCSV: toCSV(owed, DISPUTE_COLS),
+      upstreamCSV: upstream.length ? toCSV(upstream, DISPUTE_COLS) : '',
+      upstreamCount: upstream.length
+    };
+  }
+
+  // ---------- recovery tracking (operator) ----------
+  // disputed: parsed dispute CSV records (from allCSV), newPayments: parse835 results from later files
+  function recoveryCheck(disputedRecords, newPayments, feeRate) {
+    feeRate = feeRate === undefined ? 0.20 : feeRate;
+    var idx = indexPayments(newPayments);
+    var rows = disputedRecords.map(function (d) {
+      var id = (d['ICN / Claim ID'] || '').trim();
+      var disputed = money(d['Amount Disputed']) || 0;
+      var since = parseDate(d['Disputed On']);
+      var p = idx[id], newPaid = 0, last = null;
+      if (p) {
+        p.payments.forEach(function (pm) {
+          // only money that arrived on/after the dispute date counts as recovered
+          if (since && pm.paymentDate && pm.paymentDate < since) return;
+          if (since && !pm.paymentDate) return;
+          newPaid += pm.paid || 0;
+          if (pm.paymentDate && (!last || pm.paymentDate > last)) last = pm.paymentDate;
+        });
+      }
+      var recovered = round2(Math.max(0, Math.min(newPaid, disputed)));
+      return {
+        manufacturer: d['Manufacturer'], claimId: id, disputed: disputed, recovered: recovered,
+        fee: round2(recovered * feeRate), paymentDate: last ? fmtDate(last) : '', status: recovered >= disputed - 0.5 ? 'Recovered' : (recovered > 0 ? 'Partial' : 'Open')
+      };
+    }).filter(function (r) { return r.claimId; });
+    var tot = rows.reduce(function (a, r) { a.disputed += r.disputed; a.recovered += r.recovered; a.fee += r.fee; return a; }, { disputed: 0, recovered: 0, fee: 0 });
+    tot.disputed = round2(tot.disputed); tot.recovered = round2(tot.recovered); tot.fee = round2(tot.fee);
+    return { rows: rows, totals: tot };
+  }
+
+  // ---------- sample data (FAKE — for demos and tests only) ----------
+  function makeSample(asOf, n) {
+    asOf = asOf || Date.now(); n = n || 140;
+    var seed = 42;
+    function rnd() { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+    var drugs = [ // fake NDCs, illustrative refund amounts
+      { drug: 'Eliquis 5 mg', mfr: 'Bristol Myers Squibb', ndc: '99990000101', sdra: 375.00 },
+      { drug: 'Jardiance 25 mg', mfr: 'Boehringer Ingelheim', ndc: '99990000202', sdra: 412.10 },
+      { drug: 'Xarelto 20 mg', mfr: 'Janssen (J&J)', ndc: '99990000303', sdra: 390.55 },
+      { drug: 'Januvia 100 mg', mfr: 'Merck', ndc: '99990000404', sdra: 405.20 },
+      { drug: 'Farxiga 10 mg', mfr: 'AstraZeneca', ndc: '99990000505', sdra: 398.75 },
+      { drug: 'Entresto 97/103 mg', mfr: 'Novartis', ndc: '99990000606', sdra: 330.40 },
+      { drug: 'NovoLog FlexPen', mfr: 'Novo Nordisk', ndc: '99990000707', sdra: 260.00 }
+    ];
+    var trackRows = [], dispRows = [], clp = [];
+    for (var i = 0; i < n; i++) {
+      var d = drugs[Math.floor(rnd() * drugs.length)];
+      var dos = asOf - Math.floor(10 + rnd() * 80) * DAY;
+      var icn = 'MTF' + (100000000 + i);
+      var rx = String(7000000 + Math.floor(rnd() * 999999));
+      var status = 'Refund paid', r = rnd(), paid = d.sdra, cas = null;
+      if (r < 0.08) { status = 'Sent to manufacturer'; paid = 0; }                       // late or pending
+      else if (r < 0.13) { paid = round2(d.sdra * (0.55 + rnd() * 0.3)); }               // short, no reason
+      else if (r < 0.16) { paid = round2(d.sdra * 0.8); cas = '307'; }                   // short, review
+      else if (r < 0.19) { status = '340B - refund adjusted'; paid = round2(d.sdra * 0.4); } // explained
+      else if (r < 0.21) { status = 'Denied - not MFP eligible'; paid = 0; }
+      trackRows.push([icn, rx, fmtDate(dos), d.ndc, d.drug, d.mfr, d.sdra.toFixed(2), status, fmtDate(dos + 3 * DAY)]);
+      dispRows.push([rx, fmtDate(dos), d.ndc, d.drug, 'Part D Plan']);
+      if (paid > 0) clp.push({ icn: icn, paid: paid, sdra: d.sdra, ndc: d.ndc, dos: dos, mfr: d.mfr, cas: cas });
+    }
+    // 4 fills that never reached MTF
+    for (var j = 0; j < 4; j++) {
+      var dd = drugs[j];
+      dispRows.push([String(8100000 + j), fmtDate(asOf - (30 + j * 5) * DAY), dd.ndc, dd.drug, 'Part D Plan']);
+    }
+    var trackCSV = ['ICN,Rx Number,Date of Service,NDC,Drug Name,Primary Manufacturer,SDRA,Refund Status,Status Date']
+      .concat(trackRows.map(function (r) { return r.map(function (v) { return /,/.test(v) ? '"' + v + '"' : v; }).join(','); })).join('\n');
+    var dispCSV = ['Rx Number,Fill Date,NDC,Drug Name,Plan Name'].concat(dispRows.map(function (r) { return r.join(','); })).join('\n');
+    // 835
+    var isa = 'ISA*00*          *00*          *ZZ*MTFPAYMENT     *ZZ*SAMPLEPHARMACY *' + fmtDate(asOf).slice(2).replace(/-/g, '') + '*1200*^*00501*000000001*0*T*:~';
+    var total = round2(clp.reduce(function (a, c) { return a + c.paid; }, 0));
+    var segs = [isa, 'GS*HP*MTF*PHARMACY*' + fmtDate(asOf).replace(/-/g, '') + '*1200*1*X*005010X221A1', 'ST*835*0001',
+      'BPR*I*' + total.toFixed(2) + '*C*ACH*CCP*01*999999999*DA*123456*1234567890**01*999999999*DA*654321*' + fmtDate(asOf - 5 * DAY).replace(/-/g, ''),
+      'TRN*1*SAMPLE0001*1234567890', 'N1*PR*MEDICARE TRANSACTION FACILITATOR SAMPLE', 'N1*PE*SAMPLE PHARMACY*XX*9999999999', 'LX*1'];
+    clp.forEach(function (c) {
+      segs.push('CLP*' + c.icn + '*1*' + c.sdra.toFixed(2) + '*' + c.paid.toFixed(2) + '**MC*' + c.icn);
+      if (c.cas) segs.push('CAS*CO*' + c.cas + '*' + round2(c.sdra - c.paid).toFixed(2));
+      segs.push('DTM*232*' + fmtDate(c.dos).replace(/-/g, ''));
+      segs.push('SVC*N4:' + c.ndc + '*' + c.sdra.toFixed(2) + '*' + c.paid.toFixed(2));
+    });
+    segs.push('SE*' + (segs.length - 1) + '*0001', 'GE*1*1', 'IEA*1*000000001');
+    return { trackingCSV: trackCSV, dispensingCSV: dispCSV, remit835: segs.join('~\n') + '~' };
+  }
+
+  var api = {
+    parseCSV: parseCSV, toCSV: toCSV, autoMap: autoMap, missingFields: missingFields, parse835: parse835,
+    normTracking: normTracking, normDispensing: normDispensing, audit: audit, summarize: summarize,
+    disputePack: disputePack, recoveryCheck: recoveryCheck, makeSample: makeSample,
+    BUCKETS: BUCKETS, DEFAULTS: DEFAULTS, fmtDate: fmtDate, parseDate: parseDate, money: money, DISPUTE_COLS: DISPUTE_COLS
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.BackpayCore = api;
+})(this);
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var C = window.BackpayCore, CFG = window.BACKPAY_CONFIG || {};
+  var $ = function (id) { return document.getElementById(id); };
+  var OPERATOR = /[?&]operator=1\b/.test(location.search) || location.hash === '#operator';
+  var state = { tracking: null, remits: [], disp: null, maps: { tracking: {}, dispensing: {} }, rows: [], summary: null, pack: null, sample: false };
+
+  // ---------- config into page ----------
+  function applyConfig() {
+    var brand = CFG.brand || 'BackpayRx';
+    document.querySelectorAll('#footBrand').forEach(function (el) { el.textContent = brand; });
+    $('tpseName').textContent = CFG.tpseName || 'Simple Thread LLC';
+    $('footAddr').textContent = CFG.mailingAddress ? ' · ' + CFG.mailingAddress + ' · ' : ' · ';
+    ['helpEmail', 'footEmail'].forEach(function (id) { $(id).textContent = CFG.contactEmail; $(id).href = 'mailto:' + CFG.contactEmail; });
+    $('signupLink').href = CFG.signupUrl || '#';
+    if (OPERATOR) $('opContact').value = CFG.contactEmail || '';
+  }
+
+  // ---------- helpers ----------
+  function usd(n) { return (n === null || n === undefined) ? '—' : '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function usd0(n) { return '$' + Math.round(n || 0).toLocaleString('en-US'); }
+  function esc(s) { return String(s === null || s === undefined ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function readText(file) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result)); }; r.onerror = rej; r.readAsText(file); }); }
+  function download(name, text) {
+    var blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  function showErr(msg) { var e = $('err'); e.textContent = msg; e.style.display = msg ? 'block' : 'none'; }
+  function pillClass(b) {
+    if (C.BUCKETS[b].owed) return 'owed';
+    if (b === 'paid' || b === 'overpaid') return 'ok';
+    if (b === 'short_review' || b === 'pending') return 'rev';
+    return 'neu';
+  }
+  function slug(s) { return String(s || 'unknown').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase(); }
+
+  // ---------- file inputs ----------
+  function wireDrop(dropId, inputId, namesId, onFiles) {
+    var drop = $(dropId), input = $(inputId);
+    input.addEventListener('change', function () { onFiles(Array.prototype.slice.call(input.files)); });
+    ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+    drop.addEventListener('drop', function (e) { onFiles(Array.prototype.slice.call(e.dataTransfer.files)); });
+    return function (names) { $(namesId).textContent = names.length ? '✓ ' + names.join(', ') : ''; };
+  }
+  var setTrackNames = wireDrop('dropTracking', 'fileTracking', 'namesTracking', function (files) {
+    if (!files.length) return; state.sample = false;
+    readText(files[0]).then(function (t) {
+      state.tracking = C.parseCSV(t); state.maps.tracking = C.autoMap(state.tracking.headers, 'tracking');
+      setTrackNames([files[0].name]); renderMapping(); showErr('');
+    }).catch(function () { showErr('Could not read that file.'); });
+  });
+  var setRemitNames = wireDrop('dropRemit', 'fileRemit', 'namesRemit', function (files) {
+    if (!files.length) return; state.sample = false;
+    Promise.all(files.map(readText)).then(function (texts) {
+      var bad = [];
+      state.remits = [];
+      texts.forEach(function (t, i) { try { state.remits = state.remits.concat(C.parse835(t)); } catch (e) { bad.push(files[i].name); } });
+      setRemitNames(files.map(function (f) { return f.name; }));
+      showErr(bad.length ? 'These files did not look like 835 remittance files and were skipped: ' + bad.join(', ') : '');
+    });
+  });
+  var setDispNames = wireDrop('dropDisp', 'fileDisp', 'namesDisp', function (files) {
+    if (!files.length) return; state.sample = false;
+    readText(files[0]).then(function (t) {
+      state.disp = C.parseCSV(t); state.maps.dispensing = C.autoMap(state.disp.headers, 'dispensing');
+      setDispNames([files[0].name]); renderMapping();
+    });
+  });
+
+  // ---------- column mapping UI ----------
+  var LABELS = {
+    tracking: { claimId: 'Claim ID / ICN *', expected: 'Expected refund (SDRA) *', rxNumber: 'Rx number', fillDate: 'Date of service', ndc: 'NDC', drug: 'Drug name', manufacturer: 'Manufacturer', status: 'Refund status', statusDate: 'Status / sent date' },
+    dispensing: { fillDate: 'Fill date *', ndc: 'NDC *', rxNumber: 'Rx number', drug: 'Drug name' }
+  };
+  function renderMapping() {
+    var html = '';
+    [['tracking', state.tracking, 'Claims Tracking Report'], ['dispensing', state.disp, 'Dispensing report']].forEach(function (k) {
+      var kind = k[0], parsed = k[1];
+      if (!parsed) return;
+      var map = state.maps[kind], miss = C.missingFields(map, kind);
+      html += '<p style="margin:12px 0 0;font-weight:650">' + k[2] + ' <span class="muted">(' + parsed.records.length + ' rows)</span></p><div class="mapgrid">';
+      Object.keys(LABELS[kind]).forEach(function (f) {
+        html += '<div class="' + (miss.indexOf(f) !== -1 ? 'missing' : '') + '"><label>' + LABELS[kind][f] + '</label><select data-kind="' + kind + '" data-field="' + f + '"><option value="">— not in file —</option>' +
+          parsed.headers.map(function (h) { return '<option' + (map[f] === h ? ' selected' : '') + '>' + esc(h) + '</option>'; }).join('') + '</select></div>';
+      });
+      html += '</div>';
+      if (miss.length) { $('mapBox').open = true; }
+    });
+    $('mapUI').innerHTML = html || '<p class="muted">Add a file to see its columns.</p>';
+    $('mapUI').querySelectorAll('select').forEach(function (s) {
+      s.addEventListener('change', function () { state.maps[s.dataset.kind][s.dataset.field] = s.value || undefined; renderMapping(); });
+    });
+  }
+
+  // ---------- run ----------
+  function run() {
+    showErr('');
+    if (!state.tracking) { showErr('Add your MTF Claims Tracking Report first (box 1), or press "Use sample data" to see how it works.'); return; }
+    var miss = C.missingFields(state.maps.tracking, 'tracking');
+    if (miss.length) { $('mapBox').open = true; showErr('We could not find the ' + miss.map(function (m) { return LABELS.tracking[m].replace(' *', ''); }).join(' and ') + ' column in your tracking report. Pick it under "Check column matching" below.'); return; }
+    var tracking = C.normTracking(state.tracking.records, state.maps.tracking);
+    var disp = [];
+    if (state.disp) {
+      if (C.missingFields(state.maps.dispensing, 'dispensing').length) { $('mapBox').open = true; showErr('Your dispensing report needs a fill date and an NDC column. Pick them under "Check column matching", or remove the file.'); return; }
+      disp = C.normDispensing(state.disp.records, state.maps.dispensing);
+    }
+    state.rows = C.audit({ tracking: tracking, payments: state.remits, dispensing: disp, asOf: Date.now(), lateDays: CFG.lateDays || 21 });
+    state.summary = C.summarize(state.rows);
+    render();
+    $('runNote').textContent = (state.sample ? 'Sample data (fake). ' : '') + tracking.length + ' tracked claims, ' + state.remits.length + ' remittance lines' + (disp.length ? ', ' + disp.length + ' fills' : '') + ' checked.';
+    $('results').style.display = 'block';
+    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function render() {
+    var s = state.summary, rows = state.rows;
+    $('owedAmt').textContent = usd0(s.likelyOwed);
+    $('owedLbl').textContent = 'likely owed to you across ' + s.likelyOwedClaims + ' claim' + (s.likelyOwedClaims === 1 ? '' : 's') + (state.sample ? ' (sample data)' : '');
+    var B = s.byBucket;
+    var kpis = [
+      ['Claims checked', s.totalClaims, ''],
+      ['Paid correctly', B.paid.count + B.overpaid.count, ''],
+      ['Late, no payment', B.late.count, usd(B.late.gap), 'owed'],
+      ['Paid short, no reason', B.short_unexplained.count, usd(B.short_unexplained.gap), 'owed'],
+      ['Never reached MTF', B.missing_upstream.count, B.missing_upstream.count ? '≈ ' + usd(B.missing_upstream.gap) : '', 'owed'],
+      ['Short — needs review', B.short_review.count, usd(B.short_review.gap)],
+      ['Short — 340B / contract', B.short_explained.count, 'not counted'],
+      ['Not due yet / denied', B.pending.count + B.denied.count + B.no_expected.count, '']
+    ];
+    $('kpis').innerHTML = kpis.map(function (k) { return '<div class="card kpi ' + (k[3] || '') + '"><b>' + k[1] + '</b><span>' + k[0] + (k[2] ? ' · ' + k[2] : '') + '</span></div>'; }).join('');
+    var mf = Object.keys(s.byManufacturer).sort(function (a, b) { return s.byManufacturer[b].owed - s.byManufacturer[a].owed; });
+    $('mfrTable').innerHTML = '<thead><tr><th>Manufacturer</th><th class="num">Claims</th><th class="num">Likely owed</th></tr></thead><tbody>' +
+      (mf.length ? mf.map(function (m) { return '<tr><td>' + esc(m) + '</td><td class="num">' + s.byManufacturer[m].count + '</td><td class="num">' + usd(s.byManufacturer[m].owed) + '</td></tr>'; }).join('')
+        : '<tr><td colspan="3">Nothing owed found. Nice! We recommend re-checking every month.</td></tr>') + '</tbody>';
+
+    var owed = rows.filter(function (r) { return r.owed; }).sort(function (a, b) { return (b.gap || 0) - (a.gap || 0); });
+    var head = '<thead><tr><th>Issue</th><th>Claim / ICN</th><th>Date of service</th><th>Drug</th><th>Manufacturer</th><th class="num">Expected</th><th class="num">Paid</th><th class="num">Owed</th></tr></thead>';
+    function tr(r) {
+      return '<tr><td><span class="pill ' + pillClass(r.bucket) + '">' + esc(C.BUCKETS[r.bucket].label) + '</span></td><td>' + esc(r.claimId || ('Rx ' + r.rxNumber)) + '</td><td>' + C.fmtDate(r.fillDate) + '</td><td>' + esc(r.drug) + '</td><td>' + esc(r.manufacturer) + '</td><td class="num">' + usd(r.expected) + '</td><td class="num">' + usd(r.paid) + '</td><td class="num"><b>' + usd(r.gap) + '</b></td></tr>';
+    }
+    var FREE_ROWS = 5;
+    var wrap = $('claimsWrap');
+    if (OPERATOR || owed.length <= FREE_ROWS) {
+      wrap.innerHTML = '<div class="tablewrap"><table>' + head + '<tbody>' + (owed.length ? owed.map(tr).join('') : '<tr><td colspan="8">No claims likely owed.</td></tr>') + '</tbody></table></div>';
+    } else {
+      wrap.innerHTML = '<div class="tablewrap"><table>' + head + '<tbody>' + owed.slice(0, FREE_ROWS).map(tr).join('') + '</tbody></table></div>' +
+        '<div class="blurwrap" style="margin-top:-1px"><div class="blur tablewrap" style="max-height:220px;overflow:hidden"><table><tbody>' + owed.slice(FREE_ROWS, FREE_ROWS + 6).map(tr).join('') + '</tbody></table></div>' +
+        '<div class="over"><div class="card"><b>' + (owed.length - FREE_ROWS) + ' more claims worth ' + usd(owed.slice(FREE_ROWS).reduce(function (a, r) { return a + (r.gap || 0); }, 0)) + '</b><p class="muted" style="margin:8px 0 14px">We\'ll file every dispute, follow up with each manufacturer, and you pay 20% only of what comes back.</p><a class="btn" href="#recover">Recover it for me</a></div></div></div>';
+    }
+    if (OPERATOR) renderOperator();
+  }
+
+  // ---------- operator ----------
+  function opInfo() { return { pharmacyName: $('opName').value.trim(), npi: $('opNpi').value.trim(), contact: $('opContact').value.trim(), submitter: (CFG.tpseName || 'Simple Thread LLC') + ' d/b/a BackpayRx, Third-Party Support Entity on behalf of the dispensing entity', asOf: Date.now() }; }
+  function renderOperator() {
+    var f = $('opFilter').value;
+    var list = state.rows.filter(function (r) { return f === 'all' || r.owed; });
+    $('opTable').innerHTML = '<thead><tr><th>Bucket</th><th>Claim / ICN</th><th>Rx #</th><th>DOS</th><th>NDC</th><th>Drug</th><th>Mfr</th><th class="num">Expected</th><th class="num">Paid</th><th class="num">Gap</th><th>Note</th></tr></thead><tbody>' +
+      list.map(function (r) { return '<tr><td><span class="pill ' + pillClass(r.bucket) + '">' + esc(C.BUCKETS[r.bucket].label) + '</span></td><td>' + esc(r.claimId) + '</td><td>' + esc(r.rxNumber) + '</td><td>' + C.fmtDate(r.fillDate) + '</td><td>' + esc(r.ndc) + '</td><td>' + esc(r.drug) + '</td><td>' + esc(r.manufacturer) + '</td><td class="num">' + usd(r.expected) + '</td><td class="num">' + usd(r.paid) + '</td><td class="num">' + usd(r.gap) + '</td><td>' + esc(r.note) + '</td></tr>'; }).join('') + '</tbody>';
+    state.pack = C.disputePack(state.rows, opInfo());
+    var sel = $('opLetterSel'), prev = sel.value;
+    sel.innerHTML = state.pack.letters.map(function (l, i) { return '<option value="' + i + '">' + esc(l.manufacturer) + ' — ' + l.claims + ' claims, ' + usd(l.total) + '</option>'; }).join('');
+    if (prev && sel.options[prev]) sel.value = prev;
+    showLetter();
+    $('opExportUpstream').disabled = !state.pack.upstreamCount;
+  }
+  function showLetter() { var l = state.pack && state.pack.letters[+$('opLetterSel').value || 0]; $('opLetter').value = l ? l.text : 'No disputes to file.'; }
+  function auditCols() {
+    return [{ label: 'Bucket', get: function (r) { return C.BUCKETS[r.bucket].label; } }, { label: 'Likely Owed', get: function (r) { return r.owed ? 'yes' : 'no'; } }].concat(C.DISPUTE_COLS.filter(function (c) { return c.label !== 'Issue'; }));
+  }
+  function wireOperator() {
+    if (!OPERATOR) return;
+    $('operator').style.display = 'block';
+    var need = function () { if (!state.rows.length) { alert('Run a check first.'); return false; } return true; };
+    $('opFilter').addEventListener('change', function () { if (state.rows.length) renderOperator(); });
+    ['opName', 'opNpi', 'opContact'].forEach(function (id) { $(id).addEventListener('input', function () { if (state.rows.length) renderOperator(); }); });
+    $('opLetterSel').addEventListener('change', showLetter);
+    var tag = function () { return slug($('opName').value || 'pharmacy') + '-' + C.fmtDate(Date.now()); };
+    $('opExportAll').addEventListener('click', function () { if (need()) download('audit-' + tag() + '.csv', C.toCSV(state.rows, auditCols())); });
+    $('opExportDispute').addEventListener('click', function () { if (need()) download('disputes-' + tag() + '.csv', state.pack.allCSV); });
+    $('opExportUpstream').addEventListener('click', function () { if (need() && state.pack.upstreamCSV) download('never-reached-mtf-' + tag() + '.csv', state.pack.upstreamCSV); });
+    $('opLetterCsv').addEventListener('click', function () { if (!need()) return; var l = state.pack.letters[+$('opLetterSel').value || 0]; if (l) download('disputes-' + slug(l.manufacturer) + '-' + tag() + '.csv', l.csv); });
+    $('opCopy').addEventListener('click', function () { $('opLetter').select(); try { document.execCommand('copy'); } catch (e) { } });
+    $('recRun').addEventListener('click', function () {
+      var df = $('recDispute').files[0], rf = Array.prototype.slice.call($('recRemit').files);
+      if (!df || !rf.length) { alert('Choose the earlier dispute CSV and at least one newer 835 file.'); return; }
+      var rate = (parseFloat($('recRate').value) || 20) / 100;
+      Promise.all([readText(df)].concat(rf.map(readText))).then(function (texts) {
+        var disputed = C.parseCSV(texts[0]).records, pays = [];
+        texts.slice(1).forEach(function (t) { try { pays = pays.concat(C.parse835(t)); } catch (e) { } });
+        var res = C.recoveryCheck(disputed, pays, rate);
+        var t = res.totals;
+        $('recOut').innerHTML = '<div class="grid3" style="margin:10px 0"><div class="card kpi"><b>' + usd(t.disputed) + '</b><span>Disputed</span></div><div class="card kpi"><b>' + usd(t.recovered) + '</b><span>Recovered so far</span></div><div class="card kpi owed"><b>' + usd(t.fee) + '</b><span>Invoice amount (' + Math.round(rate * 100) + '%)</span></div></div>' +
+          '<div class="tablewrap"><table><thead><tr><th>Manufacturer</th><th>Claim / ICN</th><th class="num">Disputed</th><th class="num">Recovered</th><th class="num">Fee</th><th>Paid on</th><th>Status</th></tr></thead><tbody>' +
+          res.rows.map(function (r) { return '<tr><td>' + esc(r.manufacturer) + '</td><td>' + esc(r.claimId) + '</td><td class="num">' + usd(r.disputed) + '</td><td class="num">' + usd(r.recovered) + '</td><td class="num">' + usd(r.fee) + '</td><td>' + r.paymentDate + '</td><td><span class="pill ' + (r.status === 'Recovered' ? 'ok' : r.status === 'Partial' ? 'rev' : 'neu') + '">' + r.status + '</span></td></tr>'; }).join('') + '</tbody></table></div>' +
+          '<p class="muted">Recovered = new payments on disputed claims, capped at the disputed amount. Double-check against the remittance before invoicing.</p>';
+      });
+    });
+  }
+
+  // ---------- sample ----------
+  function loadSample() {
+    var s = C.makeSample(Date.now(), 140);
+    state.sample = true;
+    state.tracking = C.parseCSV(s.trackingCSV); state.maps.tracking = C.autoMap(state.tracking.headers, 'tracking');
+    state.remits = C.parse835(s.remit835);
+    state.disp = C.parseCSV(s.dispensingCSV); state.maps.dispensing = C.autoMap(state.disp.headers, 'dispensing');
+    setTrackNames(['sample-claims-tracking.csv (fake)']); setRemitNames(['sample-remittance.835 (fake)']); setDispNames(['sample-dispensing.csv (fake)']);
+    renderMapping(); run();
+  }
+
+  // ---------- init ----------
+  applyConfig(); renderMapping(); wireOperator();
+  $('runBtn').addEventListener('click', run);
+  $('sampleBtn').addEventListener('click', loadSample);
+  $('heroSample').addEventListener('click', function () { $('check').scrollIntoView({ behavior: 'smooth' }); loadSample(); });
+  $('printBtn').addEventListener('click', function () { window.print(); });
+  window.__backpay = state; // for debugging in the console only
+})();
+
+</script>
+</body>
+</html>
